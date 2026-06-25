@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import partyLogo from './assets/party-logo.svg';
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
