@@ -822,6 +822,9 @@ function VisionGrid() {
               `}>
                 <pillar.icon size={24} strokeWidth={2.5} />
               </div>
+              <h3 className="block md:hidden text-base font-black text-white uppercase">
+                {pillar.shortHeading}
+              </h3>
 
               {/* Horizontal Title - Fades out and shrinks when collapsed on desktop */}
               <h3 className={`text-lg font-black text-white uppercase tracking-tight leading-tight whitespace-nowrap transition-all duration-500 
