@@ -293,6 +293,36 @@ function App() {
             </div>
           </div>
         </div>
+        {/* --- ADD THIS ENTIRE BLOCK FOR THE MOBILE MENU --- */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-6 space-y-2 shadow-2xl absolute w-full left-0 top-16 z-50">
+            <Link to="/" onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-bold ${activeTab === 'home' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'}`}>Live Radar</Link>
+            <Link to="/feed" onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-bold uppercase tracking-wide ${activeTab === 'feed' ? 'text-blue-700 bg-blue-50' : 'text-slate-500 hover:text-blue-700 hover:bg-gray-50'}`}>Public Feed</Link>
+
+            {/* Mobile User Profile Section */}
+            {user && (
+              <div className="flex items-center justify-between px-4 py-3 border-y border-gray-100 my-2 bg-slate-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full border border-slate-200" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Citizen</span>
+                    <span className="text-sm font-black text-slate-700 truncate leading-tight">{user.name.split(' ')[0]}</span>
+                  </div>
+                </div>
+                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="text-xs font-bold text-red-500 uppercase hover:underline">Logout</button>
+              </div>
+            )}
+
+            <Link
+              to="/report"
+              onClick={() => setIsMenuOpen(false)}
+              className="block w-full text-center mt-4 bg-yellow-400 text-black px-6 py-3.5 rounded-xl font-black uppercase tracking-wide hover:bg-yellow-500 transition-colors shadow-sm"
+            >
+              Raise your Voice
+            </Link>
+          </div>
+        )}
+        {/* --- END MOBILE MENU BLOCK --- */}
       </nav>
 
       {/* Main Content Routing */}
