@@ -797,9 +797,26 @@ function TransformationFlowchart() {
 function VisionGrid() {
   // State tracks which card is expanded (defaults to the first card: id 1)
   const [activePillar, setActivePillar] = useState(1);
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  useEffect(() => {
+    // Pause the auto-cycle if the user is interacting/touching the screen
+    if (isInteracting) return;
+
+    const interval = setInterval(() => {
+      setActivePillar((prev) => (prev === visionPillars.length ? 1 : prev + 1));
+    }, 3500); // Rotates every 3.5 seconds
+
+    return () => clearInterval(interval);
+  }, [isInteracting]);
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 max-w-7xl mx-auto h-auto md:h-[480px]">
+    <div
+      className="flex flex-col md:flex-row gap-4 max-w-7xl mx-auto h-auto md:h-[480px]"
+      onMouseEnter={() => setIsInteracting(true)}
+      onMouseLeave={() => setIsInteracting(false)}
+      onTouchStart={() => setIsInteracting(true)}
+    >
       {visionPillars.map((pillar) => {
         const isActive = activePillar === pillar.id;
 
@@ -808,29 +825,32 @@ function VisionGrid() {
             key={pillar.id}
             onMouseEnter={() => setActivePillar(pillar.id)}
             onClick={() => setActivePillar(pillar.id)}
-            className={`relative overflow-hidden rounded-2xl transition-all duration-500 ease-in-out shadow-md flex flex-col bg-white border border-gray-200 cursor-pointer
+            className={`relative overflow-hidden rounded-2xl transition-all duration-500 ease-in-out shadow-md flex flex-col bg-white border cursor-pointer
               md:hover:shadow-2xl
-              ${isActive ? 'md:flex-[4] md:border-yellow-400 md:-translate-y-1' : 'md:flex-[1] md:hover:bg-slate-50'}
+              ${isActive ? 'border-yellow-400 md:flex-[4] md:-translate-y-1' : 'border-gray-200 md:flex-[1] md:hover:bg-slate-50'}
             `}
           >
             {/* 1. Header Area (Icon + Title) */}
-            <header className={`p-5 flex items-center gap-4 transition-colors duration-500 border-b-4 z-20 shrink-0
-              bg-blue-950 border-yellow-400 md:border-b-4
-              ${isActive ? '' : 'md:bg-slate-900 md:border-slate-700 md:justify-center'}
+            <header className={`p-4 md:p-5 flex items-center gap-4 transition-colors duration-500 border-b z-20 shrink-0
+              md:border-b-4
+              ${isActive ? 'bg-blue-950 border-yellow-400' : 'bg-slate-50 border-transparent md:bg-slate-900 md:border-slate-700 md:justify-center'}
             `}>
               <div className={`p-3 rounded-lg shadow-sm shrink-0 transition-colors
-                bg-yellow-400 text-blue-950
-                ${isActive ? '' : 'md:bg-slate-800 md:text-slate-400'}
+                ${isActive ? 'bg-yellow-400 text-blue-950' : 'bg-slate-200 text-slate-500 md:bg-slate-800 md:text-slate-400'}
               `}>
                 <pillar.icon size={24} strokeWidth={2.5} />
               </div>
-              <h3 className="block md:hidden text-base font-black text-white uppercase">
+
+              {/* Mobile Only Title */}
+              <h3 className={`block md:hidden text-base font-black uppercase transition-colors
+                ${isActive ? 'text-blue-950' : 'text-slate-500'}
+              `}>
                 {pillar.shortHeading}
               </h3>
 
-              {/* Horizontal Title - Fades out and shrinks when collapsed on desktop */}
-              <h3 className={`text-lg font-black text-white uppercase tracking-tight leading-tight whitespace-nowrap transition-all duration-500 
-                ${isActive ? 'md:opacity-100 md:w-auto' : 'md:opacity-0 md:w-0 md:overflow-hidden'}
+              {/* Desktop Only Horizontal Title */}
+              <h3 className={`hidden md:block text-lg font-black text-white uppercase tracking-tight leading-tight whitespace-nowrap transition-all duration-500 
+                ${isActive ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'}
               `}>
                 {pillar.heading}
               </h3>
@@ -848,8 +868,12 @@ function VisionGrid() {
               </h3>
             </div>
 
-            {/* 3. Content Area (Sits in an absolute container to prevent text jumping) */}
-            <div className="relative flex-grow bg-white">
+            {/* 3. Content Area (Accordion Body on Mobile, Absolute Overlay on Desktop) */}
+            {/* The max-h-0 controls the mobile collapse without breaking the desktop layout */}
+            <div className={`
+              relative bg-white transition-all duration-500 ease-in-out overflow-hidden
+              ${isActive ? 'max-h-[500px] opacity-100 flex-grow' : 'max-h-0 opacity-0 md:max-h-[500px] md:opacity-100 md:flex-grow'}
+            `}>
               <div className={`p-5 w-full h-full flex flex-col transition-opacity duration-500 delay-100
                 md:absolute md:top-0 md:left-0 md:w-[300px] lg:w-[380px]
                 ${isActive ? 'md:opacity-100' : 'md:opacity-0 md:pointer-events-none'}
