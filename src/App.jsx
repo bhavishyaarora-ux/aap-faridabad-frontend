@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Camera, MapPin, AlertTriangle, CheckCircle2, Menu, X, Lock,
   Settings, ShieldCheck, Home, Droplets, HeartPulse, GraduationCap, Bus, Trees, ArrowRight, ArrowDown, ArrowLeft, Filter, MessageSquare, Users, Flame, Share2, Clock
@@ -216,16 +217,32 @@ export default function AppWrapper() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthProvider>
+        <BrowserRouter>
         <App />
+        </BrowserRouter>
       </AuthProvider>
     </GoogleOAuthProvider>
   );
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useContext(AuthContext); // Access auth state!
+
+  // 1. Initialize React Router hooks
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 2. THE BRIDGE: We recreate setActiveTab so you don't have to edit all your other components!
+  // This automatically translates your old setTab('feed') clicks into real URLs (/feed)
+  const setActiveTab = (tabName) => {
+    if (tabName === 'home') navigate('/');
+    else if (tabName === 'joinmovement') navigate('/join');
+    else navigate(`/${tabName}`);
+  };
+
+  // 3. Figure out the active tab from the URL for styling the yellow underlines
+  const activeTab = location.pathname === '/' ? 'home' : location.pathname.substring(1);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -234,7 +251,7 @@ function App() {
       <nav className="bg-white border-b-4 border-yellow-400 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
           <div className="flex justify-between h-16">
-            <div className="flex items-center cursor-pointer gap-2" onClick={() => setActiveTab('home')}>
+            <Link to="/" className="flex items-center cursor-pointer gap-2">
               <img
                 src={partyLogo}
                 alt="Party Symbol"
@@ -244,11 +261,11 @@ function App() {
                 <span className="font-black text-2xl tracking-tighter text-blue-900 leading-none">AAP</span>
                 <span className="font-bold text-sm tracking-widest text-slate-800 leading-none uppercase mt-[2px]">Faridabad</span>
               </div>
-            </div>
+            </Link>
 
             <div className="hidden md:flex items-center space-x-6">
-              <button onClick={() => setActiveTab('home')} className={`cursor-pointer font-bold ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'}`}>Live Radar</button>
-              <button onClick={() => setActiveTab('feed')} className={`cursor-pointer font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'feed' ? 'text-blue-700' : 'text-slate-500 hover:text-blue-700'}`}>Public Feed</button>
+              <Link to="/" className={`cursor-pointer font-bold ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'}`}>Live Radar</Link>
+              <Link to="/feed" className={`cursor-pointer font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'feed' ? 'text-blue-700' : 'text-slate-500 hover:text-blue-700'}`}>Public Feed</Link>
 
               {/* Show User Avatar if logged in */}
               {user ? (
@@ -261,12 +278,12 @@ function App() {
                   <button onClick={logout} className="text-[10px] font-bold text-red-500 uppercase hover:underline ml-2">Logout</button>
                 </div>
               ) : null}
-              <button
-                onClick={() => setActiveTab('report')}
-                className="cursor-pointer bg-yellow-400 text-black px-6 py-2 rounded-full font-black uppercase tracking-wide hover:bg-yellow-500 transition-colors shadow-sm"
+              <Link
+                to="/report"
+                className="cursor-pointer bg-yellow-400 text-black px-6 py-2 rounded-full font-black uppercase tracking-wide hover:bg-yellow-500 transition-colors shadow-sm inline-block"
               >
                 Raise your Voice
-              </button>
+              </Link>
             </div>
 
             <div className="md:hidden flex items-center">
@@ -279,17 +296,18 @@ function App() {
       </nav>
 
       {/* Main Content Routing */}
-      {activeTab === 'home' && <HomeView setTab={setActiveTab} activeTab={activeTab} />}
-      {activeTab === 'report' && <ReportView setTab={setActiveTab} />}
-      {activeTab === 'leaders' && <LeadersPage setTab={setActiveTab} />}
-      {activeTab === 'joinmovement' && <JoinMovementPage setTab={setActiveTab} />}
-      {activeTab === 'feed' && <PublicFeedView setTab={setActiveTab} />}
-      {activeTab === 'worker-login' && <WorkerLoginView setTab={setActiveTab} />}
+      <Routes>
+        <Route path="/" element={<HomeView setTab={setActiveTab} activeTab={activeTab} />} />
+        <Route path="/report" element={<ReportView setTab={setActiveTab} />} />
+        <Route path="/leaders" element={<LeadersPage setTab={setActiveTab} />} />
+        <Route path="/join" element={<JoinMovementPage setTab={setActiveTab} />} />
+        <Route path="/feed" element={<PublicFeedView setTab={setActiveTab} />} />
+        <Route path="/worker-login" element={<WorkerLoginView setTab={setActiveTab} />} />
+      </Routes>
 
-      
+
       {/* Footer */}
       {/* Updated Light-Mode Footer: Resolves the Section Collapse */}
-      {/* Footer */}
       <footer className="bg-slate-50 text-slate-800 border-t border-slate-200 pt-16 pb-8 font-sans mt-0 relative z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-6 pb-12 border-b border-slate-200">
 
@@ -316,10 +334,10 @@ function App() {
             {/* STRATEGIC TWEAK: Darkened Header to text-slate-800 */}
             <h4 className="text-xs font-black uppercase tracking-widest text-slate-800">Quick Portal Shortcuts</h4>
             <div className="flex flex-col space-y-2 text-sm font-bold text-slate-600">
-              <button onClick={() => { setActiveTab('home'); window.scrollTo(0, 0); }} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; Live Accountability Radar</button>
-              <button onClick={() => { setActiveTab('feed'); window.scrollTo(0, 0); }} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; Public Citizen Feed</button>
-              <button onClick={() => { setActiveTab('report'); window.scrollTo(0, 0); }} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; File a Governance Failure</button>
-              <button onClick={() => { setActiveTab('joinmovement'); window.scrollTo(0, 0); }} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; Join Ground Command</button>
+              <Link to="/" onClick={() => window.scrollTo(0, 0)} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; Live Accountability Radar</Link>
+              <Link to="/feed" onClick={() => window.scrollTo(0, 0)} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; Public Citizen Feed</Link>
+              <Link to="/report" onClick={() => window.scrollTo(0, 0)} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; File a Governance Failure</Link>
+              <Link to="/join" onClick={() => window.scrollTo(0, 0)} className="cursor-pointer text-left hover:text-blue-700 transition-colors w-fit">&rarr; Join Ground Command</Link>
             </div>
           </div>
 
@@ -352,11 +370,12 @@ function App() {
             </div>
 
             {/* Secure Portal Link */}
-            <button
-              onClick={() => { setActiveTab('worker-login'); window.scrollTo(0, 0); }}
+            <Link
+              to="/worker-login"
+              onClick={() => window.scrollTo(0, 0)}
               className="cursor-pointer text-slate-700 hover:text-blue-900 text-[11px] font-black uppercase tracking-wider flex items-center gap-2 transition-colors w-fit bg-white px-4 py-2.5 rounded-lg border border-slate-300 shadow-sm hover:border-slate-400">
               <Lock size={14} className="text-yellow-500" /> Internal Ground Worker Login
-            </button>
+            </Link>
           </div>
 
         </div>
@@ -535,6 +554,7 @@ function PublicFeedView({ setTab }) {
 function HomeView({ setTab, activeTab }) {
   const [feed, setFeed] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   // FETCH DATA FROM BACKEND WITH FALLBACK
   useEffect(() => {
@@ -578,7 +598,7 @@ function HomeView({ setTab, activeTab }) {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button
-              onClick={() => setTab('report')}
+              onClick={() => navigate('/report')}
               className="cursor-pointer bg-yellow-400 text-black px-8 py-4 rounded-md font-black text-lg uppercase tracking-wide hover:bg-yellow-500 transition-transform hover:-translate-y-1"
             >
               RAISE YOUR VOICE
