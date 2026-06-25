@@ -3,7 +3,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Camera, MapPin, AlertTriangle, CheckCircle2, Menu, X, Lock,
-  Settings, ShieldCheck, Home, Droplets, HeartPulse, GraduationCap, Bus, Trees, ArrowRight, ArrowDown, ArrowLeft, Filter, MessageSquare, Users, Flame, Share2, Clock, ChevronDown
+  Settings, ShieldCheck, Home, Droplets, HeartPulse, GraduationCap, Bus, Trees, ArrowRight, ArrowDown, ArrowLeft, Filter, MessageSquare, Users, Flame, Share2, Clock
 } from 'lucide-react';
 import partyLogo from './assets/party-logo.svg';
 
@@ -579,128 +579,7 @@ function PublicFeedView({ setTab }) {
   );
 }
 
-export function VisionSection() {
-  const [activePillar, setActivePillar] = useState(1);
-  const [isAutoCycling, setIsAutoCycling] = useState(true);
-  const autoCycleTimer = useRef(null);
 
-  // Handle the Attractor Mode looping interval
-  useEffect(() => {
-    if (isAutoCycling) {
-      autoCycleTimer.current = setInterval(() => {
-        setActivePillar((currentId) => {
-          return currentId >= visionPillars.length ? 1 : currentId + 1;
-        });
-      }, 3500); // 3.5 Seconds cycle pace
-    }
-
-    // Clean up the timer thread on component unmount or when cycle breaks
-    return () => {
-      if (autoCycleTimer.current) clearInterval(autoCycleTimer.current);
-    };
-  }, [isAutoCycling]);
-
-  // Permanently break attractor cycle on manual citizen interaction
-  const handleUserInteraction = (pillarId) => {
-    setIsAutoCycling(false);
-    if (autoCycleTimer.current) clearInterval(autoCycleTimer.current);
-    setActivePillar(pillarId);
-  };
-
-  return (
-    <section
-      className="bg-slate-950 py-16 px-4 md:px-8 border-b-8 border-yellow-400"
-      onTouchStart={() => setIsAutoCycling(false)} // Secondary safety catcher for mobile touches
-      onMouseDown={() => setIsAutoCycling(false)}  // Secondary safety catcher for desktop clicks
-    >
-      <div className="max-w-4xl mx-auto">
-
-        {/* Section Header */}
-        <div className="mb-10 text-center md:text-left">
-          <span className="text-xs font-black tracking-widest text-yellow-400 uppercase bg-yellow-400/10 px-3 py-1 rounded-full">
-            Our Blueprints
-          </span>
-          <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mt-3">
-            The Faridabad <span className="text-yellow-400">Vision Blueprint</span>
-          </h2>
-          <p className="text-slate-400 font-medium text-sm md:text-base mt-2 max-w-xl">
-            Click any pillar to freeze the radar and inspect our direct action plan.
-          </p>
-        </div>
-
-        {/* Accordion Stack Container */}
-        <div className="space-y-4">
-          {visionPillars.map((pillar) => {
-            const IconComponent = pillar.icon;
-            const isOpen = activePillar === pillar.id;
-
-            return (
-              <div
-                key={pillar.id}
-                className={`bg-slate-900 border-2 rounded-2xl overflow-hidden transition-all duration-300 ${isOpen ? 'border-yellow-400 shadow-lg shadow-yellow-400/5' : 'border-slate-800 hover:border-slate-700'
-                  }`}
-              >
-                {/* Clickable Header Bar */}
-                <button
-                  onClick={() => handleUserInteraction(pillar.id)}
-                  className="w-full p-4 md:p-6 flex items-center justify-between gap-4 text-left focus:outline-none"
-                >
-                  <div className="flex items-center gap-4 min-w-0">
-                    {/* Icon Core Box */}
-                    <div className={`p-3 rounded-xl shrink-0 transition-colors ${isOpen ? 'bg-yellow-400 text-black' : 'bg-slate-800 text-slate-400'
-                      }`}>
-                      <IconComponent size={24} />
-                    </div>
-
-                    {/* Fixed Text Layout Engine (Resolves image_24cadc.jpg collision bug) */}
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 md:hidden mb-0.5">
-                        {pillar.shortHeading}
-                      </span>
-                      <h3 className="font-black text-white text-lg md:text-xl tracking-tight leading-tight truncate">
-                        {pillar.heading}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Right Action Chevron */}
-                  <ChevronDown
-                    size={20}
-                    className={`text-slate-500 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-yellow-400' : ''}`}
-                  />
-                </button>
-
-                {/* Animated Accordion Content Box via Dynamic CSS Grid Rows */}
-                <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                  }`}>
-                  <div className="overflow-hidden">
-                    <div className="p-4 md:p-6 pt-0 md:pt-0 border-t border-slate-800/50">
-
-                      {/* Deep-Dive Paragraph Block */}
-                      <p className="text-slate-300 text-sm md:text-base font-medium leading-relaxed mb-4">
-                        {pillar.description}
-                      </p>
-
-                      {/* Sharp Opposition "Break from Reality" Callout Box */}
-                      <div className="bg-slate-950 border border-yellow-400/20 rounded-xl p-4 shadow-inner">
-                        <p className="text-xs md:text-sm font-bold text-yellow-400 leading-relaxed">
-                          {pillar.microTag}
-                        </p>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-
-      </div>
-    </section>
-  );
-}
 
 // --- VIEWS ---
 
@@ -782,7 +661,6 @@ function HomeView({ setTab, activeTab }) {
           </div>
         </div>
       </section>
-      <VisionSection />
       {/* HIGH-DENSITY LIVE ACCOUNTABILITY RADAR */}
       <section id="live-radar" className="bg-slate-900 py-12 px-4 border-b-4 border-slate-950 shadow-inner">
         <div className="max-w-5xl mx-auto">
