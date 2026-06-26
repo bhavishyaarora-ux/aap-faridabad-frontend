@@ -434,8 +434,19 @@ function PublicFeedView({ setTab }) {
       try {
         const response = await fetch(`${API_BASE_URL}/api/complaints`);
         const result = await response.json();
+        // Inside PublicFeedView useEffect:
         if (result.success) {
-          setFeed(result.data);
+          // Check the logged in user from local storage
+          const savedUser = JSON.parse(localStorage.getItem('aap_citizen_user') || "{}");
+          const currentUserId = savedUser._id;
+
+          // Map over the data and set hasBoosted to true if their ID is in the array
+          const formattedFeed = result.data.map(issue => ({
+            ...issue,
+            hasBoosted: issue.boostedBy ? issue.boostedBy.includes(currentUserId) : false
+          }));
+
+          setFeed(formattedFeed);
         } else {
           setFeed(fallbackMockFeed);
         }
