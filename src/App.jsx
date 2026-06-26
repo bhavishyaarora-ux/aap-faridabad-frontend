@@ -427,7 +427,7 @@ function App() {
 function PublicFeedView({ setTab }) {
   const [feed, setFeed] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { requireAuth } = useContext(AuthContext);
+  const { requireAuth,user } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchComplaints = async () => {
@@ -436,14 +436,14 @@ function PublicFeedView({ setTab }) {
         const result = await response.json();
         // Inside PublicFeedView useEffect:
         if (result.success) {
+          const currentUserId = user ? (user._id || user.id) : null;
           // Check the logged in user from local storage
-          const savedUser = JSON.parse(localStorage.getItem('aap_citizen_user') || "{}");
-          const currentUserId = savedUser._id;
-
+          
+         
           // Map over the data and set hasBoosted to true if their ID is in the array
           const formattedFeed = result.data.map(issue => ({
             ...issue,
-            hasBoosted: issue.boostedBy ? issue.boostedBy.includes(currentUserId) : false
+            hasBoosted: (issue.boostedBy && currentUserId) ? issue.boostedBy.includes(currentUserId) : false
           }));
 
           setFeed(formattedFeed);
@@ -459,12 +459,11 @@ function PublicFeedView({ setTab }) {
     };
     fetchComplaints();
     window.scrollTo(0, 0);
-  }, []);
+  }, [user]);
 
   const handleBoostClick = (id) => {
-    // Before doing anything, check if they are logged in!
     requireAuth(async () => {
-      // 1. Optimistic UI update
+      // 1. Optimistic UI update (Makes the button feel instantly responsive)
       setFeed(prevFeed => prevFeed.map(issue => {
         if (issue._id === id) {
           const isBoosted = issue.hasBoosted;
@@ -480,16 +479,32 @@ function PublicFeedView({ setTab }) {
       // 2. Call the protected backend route
       try {
         const token = localStorage.getItem('aap_citizen_token');
-        await fetch(`${API_BASE_URL}/api/complaints/${id}/boost`, {
+        const response = await fetch(`${API_BASE_URL}/api/complaints/${id}/boost`, {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${token}` // Send the token!
+            'Authorization': `Bearer ${token}`
           }
         });
+        const data = await response.json();
+
+        // 3. REAL-TIME SYNC: Overwrite the optimistic update with the EXACT backend truth!
+        // This guarantees the frontend and backend can never go in opposite directions.
+        if (data.success) {
+          const currentUserId = user ? (user._id || user.id) : null;
+          setFeed(prevFeed => prevFeed.map(issue => {
+            if (issue._id === id) {
+              return {
+                ...data.data, // Take the exact updated document from MongoDB
+                hasBoosted: (data.data.boostedBy && currentUserId) ? data.data.boostedBy.includes(currentUserId) : false
+              };
+            }
+            return issue;
+          }));
+        }
       } catch (error) {
         console.error("Failed to boost on server", error);
       }
-    }, "Join 400+ active citizens. Sign in securely to boost this issue to the top of the Radar!"); // The custom message
+    }, "Join 400+ active citizens. Sign in securely to boost this issue to the top of the Radar!");
   };
 
   const getTimeAgo = (dateString) => {
