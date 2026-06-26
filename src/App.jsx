@@ -463,7 +463,7 @@ function PublicFeedView({ setTab }) {
 
   const handleBoostClick = (id) => {
     requireAuth(async () => {
-      // 1. Optimistic UI update (Makes the button feel instantly responsive)
+      // 1. Optimistic UI update
       setFeed(prevFeed => prevFeed.map(issue => {
         if (issue._id === id) {
           const isBoosted = issue.hasBoosted;
@@ -487,15 +487,18 @@ function PublicFeedView({ setTab }) {
         });
         const data = await response.json();
 
-        // 3. REAL-TIME SYNC: Overwrite the optimistic update with the EXACT backend truth!
-        // This guarantees the frontend and backend can never go in opposite directions.
+        // 3. REAL-TIME SYNC (THE FIX)
         if (data.success) {
-          const currentUserId = user ? (user._id || user.id) : null;
+          // By grabbing the user directly from localStorage here, we completely bypass 
+          // React's stale closure. It will always know exactly who just logged in!
+          const savedUser = JSON.parse(localStorage.getItem('aap_citizen_user') || "{}");
+          const freshUserId = savedUser._id || savedUser.id;
+
           setFeed(prevFeed => prevFeed.map(issue => {
             if (issue._id === id) {
               return {
-                ...data.data, // Take the exact updated document from MongoDB
-                hasBoosted: (data.data.boostedBy && currentUserId) ? data.data.boostedBy.includes(currentUserId) : false
+                ...data.data,
+                hasBoosted: (data.data.boostedBy && freshUserId) ? data.data.boostedBy.includes(freshUserId) : false
               };
             }
             return issue;
