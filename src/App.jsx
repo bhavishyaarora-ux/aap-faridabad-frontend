@@ -377,7 +377,7 @@ function App() {
             <div className="flex flex-col space-y-3 text-sm font-medium text-slate-600">
               <div>
                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Faridabad IT Cell</span>
-                <a href="mailto:contact@aapfaridabad.in" className="font-bold text-blue-700 hover:underline">contact@aapfaridabad.in</a>
+                <a href="mailto:contact@aapfaridabad.in" className="font-bold text-blue-700 hover:underline">contactaapfaridabad@gmail.com</a>
               </div>
               <div>
                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">National Helpline</span>
